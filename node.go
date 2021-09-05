@@ -250,7 +250,7 @@ func (n *shortNode) toString(ind string, db *Database) string {
 	hash := common.BytesToHash(hashnode)
 	// (original code)
 	// return fmt.Sprintf("{shortNode hash: %s, key: %x - value: %v} ", hash.Hex(), n.Key, n.Val.toString(ind+"  ", db))
-	return fmt.Sprintf("\n\t\tshortNode hash: %s, \n\t\tkey: %x \n\t\t%v ", hash.Hex(), n.Key, n.Val.toString(ind+"  ", db)) // (joonha)
+	return fmt.Sprintf("\n\t\tshortNode hash: %s, \n\t\tkey:\t\t%x \n\t\t%v ", hash.Hex(), n.Key, n.Val.toString(ind+"  ", db)) // (joonha)
 }
 func (n hashNode) toString(ind string, db *Database) string {
 	// resolve hashNode (get node from db)
