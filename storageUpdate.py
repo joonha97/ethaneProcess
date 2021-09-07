@@ -37,13 +37,15 @@ PASSWORD = "1234"
 fullnode.geth.personal.unlockAccount(fullnode.eth.coinbase, PASSWORD, 0)
 fullnode.eth.defaultAccount = fullnode.eth.coinbase
 
-# simpleStorage.sol smart contract
+# simpleStorage2.sol smart contract
 # put employ code to geth console & start mining => then we will get contract address
-CONTRACTADDR = Web3.toChecksumAddress("0x17c33F7747098BF36c950cdd4B0681231B38E581")
-CONTRACT = fullnode.eth.contract(address=CONTRACTADDR)
+CONTRACTADDR = Web3.toChecksumAddress("0xB103E5EF66E839cb2988A0A0ed7bBa30Dc410B02")
+abiString = '[ { "constant": false, "inputs": [ { "name": "key", "type": "uint256" }, { "name": "value", "type": "uint256" } ], "name": "set", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "storageMap", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "key", "type": "uint256" } ], "name": "get", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [ { "name": "slot", "type": "uint256" }, { "name": "key", "type": "uint256" } ], "name": "mapLocation", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" } ]'
+CONTRACTABI = json.loads(abiString)
+CONTRACT = fullnode.eth.contract(address=CONTRACTADDR, abi=CONTRACTABI)
 
 # gas amount for transaction (should be large enough)
-GAS = 1000000
+GAS = 10000000
 
 
 
@@ -106,12 +108,20 @@ if __name__ == "__main__":
     try:
         fullnode.geth.miner.start(1)
 
-        print("flag 1")
-        tx_hash = CONTRACT.functions.setter(1, 10).transact({'gas':GAS}) # error
-        print("flag 2")
-        print("Storage Map:\t\t\t" + str(CONTRACT.functions.getter(1))) # error
-        print("flag 3")
-        tx_receipt = fullnode.eth.waitForTransactionReceipt(tx_hash)
+        print("")
+
+        # set mapping
+        tx_hash = CONTRACT.functions.set(88, 45).transact({'gas':GAS}) 
+
+        # should know the slot offset to calculate the mapLocation
+        # https://programtheblockchain.com/posts/2018/03/09/understanding-ethereum-smart-contract-storage/
+        mapLocation = CONTRACT.functions.mapLocation(3, 88).call()
+        print("Map Location:\t\t\t" + str(mapLocation))
+        
+        # get mapping
+        MAP = str(CONTRACT.functions.get(88).call())
+        print("Storage Map:\t\t\t" + str(MAP)) 
+        tx_receipt = fullnode.eth.waitForTransactionReceipt(tx_hash) #
     
     except:
         print("ERROR: cannot connect to Ethereum node. Start ethereum node first")
@@ -136,8 +146,9 @@ if __name__ == "__main__":
 
     print("")
 
-    for i in range(0, 20): # there are (2^32 - 1) slots (=contract storage)
+    for i in range(mapLocation-5, mapLocation + 10): # there are (2^32 - 1) slots (=contract storage)
         print("Storage of this contract:\t" + str(i) + "\t" + str(getStorageAt(CONTRACTADDR, i).hex()))
+        # print("Storage of this contract:\t" + str(i) + "\t" + str(map[i]))
 
     totalEndTime = datetime.now() - totalStartTime
     print("\ntotal elapsed:", totalEndTime.seconds, "seconds")
