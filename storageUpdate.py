@@ -111,7 +111,7 @@ if __name__ == "__main__":
         print("")
 
         # set mapping
-        tx_hash = CONTRACT.functions.set(88, 45).transact({'gas':GAS}) 
+        CONTRACT.functions.set(88, 45).transact({'gas':GAS}) 
 
         # should know the slot offset to calculate the mapLocation
         # https://programtheblockchain.com/posts/2018/03/09/understanding-ethereum-smart-contract-storage/
@@ -121,7 +121,6 @@ if __name__ == "__main__":
         # get mapping
         MAP = str(CONTRACT.functions.get(88).call())
         print("Storage Map:\t\t\t" + str(MAP)) 
-        tx_receipt = fullnode.eth.waitForTransactionReceipt(tx_hash) #
     
     except:
         print("ERROR: cannot connect to Ethereum node. Start ethereum node first")
